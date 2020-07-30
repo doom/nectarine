@@ -63,6 +63,34 @@ def _add_argument_for(parser: argparse.ArgumentParser, name, field):
         parser.add_argument(f"--{name}", nargs=len(values_types), action=_make_tuple_action(values_types), **kwargs)
 
 
+def _argument_parser_for(
+        target_type: Type,
+        flag_name_converter: Callable[[Path], str] = None
+):
+    arg_to_path = {}
+    flag_name_converter = flag_name_converter or path_to_flag_name
+    parser = argparse.ArgumentParser(allow_abbrev=False, add_help=True)
+    paths = ((path, field) for path, field in get_paths(target_type) if _is_supported_type(field.type))
+    for path, field in paths:
+        arg_name = flag_name_converter(path)
+        arg_to_path[arg_name] = path
+        _add_argument_for(parser, arg_name, field)
+    return parser, arg_to_path
+
+
+def argument_parser_for(
+        target_type: Type,
+        flag_name_converter: Callable[[Path], str] = None
+) -> argparse.ArgumentParser:
+    """
+    Retrieve an argument parser
+
+    :param target_type:                 the target type
+    :param flag_name_converter:         the function used to generate flag names from paths
+    """
+    return _argument_parser_for(target_type, flag_name_converter)[0]
+
+
 class Arguments(ConfigurationProvider):
 
     def __init__(
@@ -71,16 +99,10 @@ class Arguments(ConfigurationProvider):
             flag_name_converter: Callable[[Path], str] = None,
     ):
         self.argv = argv if argv is not None else sys.argv[1:]
-        self.variable_name_converter = flag_name_converter or path_to_flag_name
+        self.flag_name_converter = flag_name_converter or path_to_flag_name
 
     def load_configuration(self, target_type: Type, strict=False) -> Dict[str, Any]:
-        parser = argparse.ArgumentParser(allow_abbrev=False, add_help=True)
-        paths = ((path, field) for path, field in get_paths(target_type) if _is_supported_type(field.type))
-        arg_to_path = {}
-        for path, field in paths:
-            arg_name = self.variable_name_converter(path)
-            arg_to_path[arg_name] = path
-            _add_argument_for(parser, arg_name, field)
+        parser, arg_to_path = _argument_parser_for(target_type, self.flag_name_converter)
         args, unknown = parser.parse_known_args(self.argv)
         if unknown:
             raise NectarineStrictLoadingError(offending_keys=unknown)

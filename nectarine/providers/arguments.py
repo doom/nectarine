@@ -70,7 +70,7 @@ class Arguments(ConfigurationProvider):
             argv: List[str] = None,
             flag_name_converter: Callable[[Path], str] = None,
     ):
-        self.argv = argv or sys.argv[1:]
+        self.argv = argv if argv is not None else sys.argv[1:]
         self.variable_name_converter = flag_name_converter or path_to_flag_name
 
     def load_configuration(self, target_type: Type, strict=False) -> Dict[str, Any]:

@@ -1,8 +1,9 @@
 from dataclasses import dataclass, _FIELD, Field as DataclassField, _FIELD_INITVAR, MISSING
 from typing import Any, Callable, Iterator, Type
 
-from nectarine.errors import NectarineMissingValueError
-from nectarine.typing import hintify, is_dataclass, is_mapping, is_optional, is_linear_collection, get_generic_args
+from nectarine.errors import NectarineMissingValueError, NectarineInvalidValueError
+from nectarine.typing import get_generic_args, hintify, \
+    is_dataclass, is_mapping, is_optional, is_linear_collection, is_union
 
 
 @dataclass
@@ -95,4 +96,12 @@ def dataclass_from_dict(target_type: Type, value):
         origin = type(value)
         key_type, value_type = get_generic_args(target_type)
         return origin((dataclass_from_dict(key_type, k), dataclass_from_dict(value_type, v)) for k, v in value.items())
+    if is_union(target_type):
+        types = get_generic_args(target_type)
+        for t in types:
+            try:
+                return dataclass_from_dict(t, value)
+            except (NectarineMissingValueError, Exception):
+                pass
+        raise NectarineInvalidValueError(target_type, value)
     return value

@@ -3,8 +3,18 @@ Module providing typing utilities on top of those from the typing module
 """
 
 from inspect import getattr_static
-import typing
 from typing import Any, Collection, Dict, FrozenSet, List, Mapping, Set, Tuple, Type, Union
+
+try:
+    from typing import get_args, get_origin
+except ImportError:
+    # The current Python version does not support get_args / get_origin, define them
+    def get_args(type_: Type) -> Tuple:
+        return getattr(type_, '__args__', ())
+
+
+    def get_origin(type_: Type) -> Type:
+        return getattr(type_, '__origin__', None)
 
 
 def is_number(type_: Type) -> bool:
@@ -40,7 +50,7 @@ def is_generic(type_: Type) -> bool:
 
     :param type_:                       the type to check
     """
-    return typing.get_origin(type_) is not None
+    return get_origin(type_) is not None
 
 
 def get_generic_args(type_: Type) -> Tuple[Type, ...]:
@@ -50,7 +60,7 @@ def get_generic_args(type_: Type) -> Tuple[Type, ...]:
     :param type_:                       the generic type to retrieve the arguments from
     """
     assert is_generic(type_)
-    return typing.get_args(type_)
+    return get_args(type_)
 
 
 def is_union(type_: Type) -> bool:
@@ -59,7 +69,7 @@ def is_union(type_: Type) -> bool:
 
     :param type_:                       the type to check
     """
-    return is_generic(type_) and typing.get_origin(type_) is Union
+    return is_generic(type_) and get_origin(type_) is Union
 
 
 def is_optional(type_: Type) -> bool:
@@ -82,7 +92,7 @@ def is_generic_collection(type_: Type) -> bool:
     """
     if not is_generic(type_):
         return False
-    origin = typing.get_origin(type_)
+    origin = get_origin(type_)
     try:
         return origin is not None and issubclass(origin, Collection)
     except TypeError:  # Other generics such as Union have an origin that cannot be passed to issubclass
@@ -95,7 +105,7 @@ def get_generic_collection_origin(type_: Type) -> Type:
 
     :param type_:                       the generic collection type to retrieve the origin from
     """
-    return typing.get_origin(type_)
+    return get_origin(type_)
 
 
 def is_linear_collection(type_: Type) -> bool:  # Quite unsure of this wording
@@ -123,7 +133,7 @@ def is_tuple(type_: Type) -> bool:
 
     :param type_:                       the type to check
     """
-    return is_generic(type_) and typing.get_origin(type_) is tuple
+    return is_generic(type_) and get_origin(type_) is tuple
 
 
 def is_tuple_of_unknown_length(type_: Type) -> bool:
@@ -164,7 +174,7 @@ def is_conform_to_hint(value, hint: Type) -> bool:
         allowed_types = get_generic_args(hint)
         return any(is_conform_to_hint(value, allowed_type) for allowed_type in allowed_types)
     if is_generic_collection(hint):
-        origin = typing.get_origin(hint)
+        origin = get_origin(hint)
         if not isinstance(value, origin):
             return False
         args = get_generic_args(hint)

@@ -11,7 +11,7 @@ with open("requirements-yaml.txt", "r") as f:
 
 setuptools.setup(
     name="nectarine",
-    version="1.0.3",
+    version="1.0.4",
     author="Clément Doumergue",
     author_email="clement.doumergue@etna.io",
     description="Library to load configuration from various sources",

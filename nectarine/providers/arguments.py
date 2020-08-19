@@ -14,6 +14,11 @@ from nectarine.typing import is_primitive, is_tuple, is_linear_collection, is_pa
 from nectarine._utils import insert_at_path, try_convert
 
 
+class StoreTrueOrNone(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        setattr(namespace, self.dest, True)
+
+
 def _make_tuple_action(types: Tuple[Type]):
     class TupleAction(argparse.Action):
         def __init__(self, *args, **kwargs):
@@ -48,7 +53,7 @@ def _is_supported_type(type_: Type) -> bool:
 def _add_argument_for(parser: argparse.ArgumentParser, name, field):
     kwargs = {"metavar": "[value]", "required": False}
     if field.type is bool:
-        parser.add_argument(f"--{name}", action='store_true', required=False)
+        parser.add_argument(f"--{name}", action=StoreTrueOrNone, nargs=0, required=False)
     elif is_primitive(field.type):
         parser.add_argument(f"--{name}", type=lambda x: try_convert(x, field.type), **kwargs)
     elif is_linear_collection(field.type):

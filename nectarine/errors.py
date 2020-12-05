@@ -4,6 +4,8 @@ Module providing exception types to describe errors occurring when loading a con
 
 from typing import List, Type
 
+from .configuration_provider import Path
+
 
 class NectarineError(Exception):
     """
@@ -16,7 +18,7 @@ class NectarineStrictLoadingError(NectarineError):
     Exception class representing an error related to extraneous keys when using strict loading
     """
 
-    def __init__(self, offending_keys: List[str]):
+    def __init__(self, offending_keys: List[Path]):
         self.offending_keys = offending_keys
 
     def __str__(self):

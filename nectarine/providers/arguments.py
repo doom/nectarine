@@ -38,6 +38,11 @@ def path_to_flag_name(path: Path) -> str:
     return name
 
 
+def flag_name_to_path(flag_name: str) -> Path:
+    flag_name = flag_name.lstrip('--')
+    return tuple(flag_name.split('-'))
+
+
 def _is_supported_type(type_: Type) -> bool:
     if is_primitive(type_):
         return True
@@ -110,7 +115,7 @@ class Arguments(ConfigurationProvider):
         parser, arg_to_path = _argument_parser_for(target_type, self.flag_name_converter)
         args, unknown = parser.parse_known_args(self.argv)
         if unknown:
-            raise NectarineStrictLoadingError(offending_keys=unknown)
+            raise NectarineStrictLoadingError(offending_keys=[flag_name_to_path(f) for f in unknown])
         result = {}
         for arg_name, value in vars(args).items():
             if value is not None:

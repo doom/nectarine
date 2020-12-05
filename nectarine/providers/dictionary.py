@@ -2,9 +2,9 @@
 Module providing a ConfigurationProvider backed by a Python dictionary
 """
 
-from typing import Any, Dict, Type
+from typing import Any, Dict, List, Tuple, Type
 
-from nectarine.configuration_provider import ConfigurationProvider
+from nectarine.configuration_provider import ConfigurationProvider, Path
 from nectarine.dataclasses import get_paths
 from nectarine.errors import NectarineStrictLoadingError, NectarineInvalidValueError
 from nectarine.typing import is_conform_to_hint, is_dataclass, is_tuple
@@ -18,7 +18,7 @@ def _get_dict_paths(d: Dict[str, Any], path=()):
             yield from _get_dict_paths(v, (*path, k))
 
 
-def _unify_paths(paths: Dict, dict_paths: Dict):
+def _unify_paths(paths: Dict, dict_paths: Dict) -> Tuple[Dict, List[Path]]:
     result = {}
     extraneous = []
     for k, v in dict_paths.items():
@@ -40,7 +40,7 @@ class Dictionary(ConfigurationProvider):
         dict_paths = dict(_get_dict_paths(self.value))
         unified, extraneous = _unify_paths(paths, dict_paths)
         if strict is True and extraneous:
-            raise NectarineStrictLoadingError(extraneous)
+            raise NectarineStrictLoadingError(offending_keys=extraneous)
         result = {}
         for path, (field, value) in unified.items():
             if not is_dataclass(field.type):

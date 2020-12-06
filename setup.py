@@ -11,14 +11,14 @@ with open("requirements-yaml.txt", "r") as f:
 
 setuptools.setup(
     name="nectarine",
-    version="1.0.4",
+    version="1.0.5",
     author="Clément Doumergue",
     author_email="clement.doumergue@etna.io",
     description="Library to load configuration from various sources",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/doom/nectarine",
-    packages=setuptools.find_namespace_packages(),
+    packages=setuptools.find_namespace_packages(include=["nectarine", "nectarine.*"]),
     install_requires=dependencies,
     extras_require={
         "yaml": yaml_dependencies,

@@ -47,7 +47,8 @@ class Env(ConfigurationProvider):
             return try_convert(value, target_type)
         if is_linear_collection(target_type):
             origin = get_generic_collection_origin(target_type)
-            return origin(value.split(self.list_separator))
+            value_type = get_generic_args(target_type)[0]
+            return origin(try_convert(v, value_type) for v in value.split(self.list_separator))
         if is_tuple(target_type):
             args = get_generic_args(target_type)
             values = value.split(self.list_separator)

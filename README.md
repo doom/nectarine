@@ -4,7 +4,7 @@ Library to load configuration from various sources.
 
 ## Requirements
 
-Nectarine requires Python 3.6 or above, and has been tested using Python 3.8.
+Nectarine requires Python 3.7 or above, and has been tested using Python 3.7 and 3.8.
 
 ## Installing
 

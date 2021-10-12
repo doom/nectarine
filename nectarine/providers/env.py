@@ -9,7 +9,7 @@ from nectarine.configuration_provider import ConfigurationProvider, Path
 from nectarine.dataclasses import get_paths
 from nectarine.errors import NectarineInvalidValueError
 from nectarine.typing import get_generic_args, get_generic_collection_origin, \
-    is_number, is_linear_collection, is_tuple, is_parsable
+    is_number, is_linear_collection, is_tuple, is_parsable, is_literal
 from nectarine._utils import insert_at_path, try_convert
 
 
@@ -36,6 +36,8 @@ class Env(ConfigurationProvider):
     def is_supported_type(self, type_: Type):
         if type_ in self.DEFAULT_SUPPORTED_TYPES:
             return True
+        if is_literal(type_):
+            return True
         if is_parsable(type_):
             return True
         return self.allow_lists and (is_linear_collection(type_) or is_tuple(type_))
@@ -55,6 +57,16 @@ class Env(ConfigurationProvider):
             if len(args) != len(values):
                 raise NectarineInvalidValueError(target_type, value)
             return tuple(try_convert(v, t) for v, t in zip(values, args))
+        if is_literal(target_type):
+            allowed_values = get_generic_args(target_type)
+            for v in allowed_values:
+                try:
+                    converted_value = type(v)(value)
+                    if converted_value == v:
+                        return converted_value
+                except ValueError:
+                    pass
+            raise NectarineInvalidValueError(target_type, value)
         return value
 
     def load_configuration(self, target_type: Type, strict=False) -> Dict[str, Any]:

@@ -3,7 +3,7 @@ Module providing typing utilities on top of those from the typing module
 """
 
 from inspect import getattr_static
-from typing import Any, Collection, Dict, FrozenSet, List, Mapping, Set, Tuple, Type, Union
+from typing import Any, Collection, Dict, FrozenSet, List, Literal, Mapping, Set, Tuple, Type, Union
 
 try:
     from typing import get_args, get_origin
@@ -148,6 +148,10 @@ def is_tuple_of_unknown_length(type_: Type) -> bool:
     return len(args) == 2 and args[1] is Ellipsis
 
 
+def is_literal(type_: Type) -> bool:
+    return is_generic(type_) and get_origin(type_) is Literal
+
+
 def is_parsable(type_: Type) -> bool:
     """
     Check whether a type is parsable from a string, i.e. it has a static "parse" method
@@ -191,6 +195,9 @@ def is_conform_to_hint(value, hint: Type) -> bool:
         assert len(args) == 1
         value_type = args[0]
         return all(is_conform_to_hint(v, value_type) for v in value)
+    if is_literal(hint):
+        args = get_generic_args(hint)
+        return value in args
     if hint is float:
         return isinstance(value, (int, float))
     if is_dataclass(hint) and isinstance(value, dict):

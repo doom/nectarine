@@ -9,7 +9,7 @@ from typing import Any, Callable, Dict, List, Tuple, Type
 from nectarine.configuration_provider import ConfigurationProvider, Path
 from nectarine.dataclasses import get_paths
 from nectarine.errors import NectarineStrictLoadingError
-from nectarine.typing import is_primitive, is_tuple, is_linear_collection, is_parsable, \
+from nectarine.typing import is_primitive, is_tuple, is_linear_collection, is_parsable, is_literal, \
     get_generic_args
 from nectarine._utils import insert_at_path, try_convert
 
@@ -52,6 +52,8 @@ def _is_supported_type(type_: Type) -> bool:
     if is_tuple(type_):
         values_types = get_generic_args(type_)
         return all(is_primitive(t) for t in values_types)
+    if is_literal(type_):
+        return is_primitive(type_)
     return False
 
 
@@ -71,6 +73,9 @@ def _add_argument_for(parser: argparse.ArgumentParser, name, field):
     elif is_tuple(field.type):  # This is matched only for fixed-length tuples
         values_types = get_generic_args(field.type)
         parser.add_argument(f"--{name}", nargs=len(values_types), action=_make_tuple_action(values_types), **kwargs)
+    elif is_literal(field.type):
+        allowed_values = get_generic_args(field.type)
+        parser.add_argument(f"--{name}", choices=allowed_values, nargs='?')
 
 
 def _argument_parser_for(

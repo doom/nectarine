@@ -3,7 +3,7 @@ from typing import Any, Callable, Iterator, Type
 
 from nectarine.errors import NectarineMissingValueError, NectarineInvalidValueError
 from nectarine.typing import get_generic_args, hintify, \
-    is_dataclass, is_mapping, is_optional, is_linear_collection, is_union
+    is_dataclass, is_mapping, is_optional, is_linear_collection, is_union, is_literal, is_conform_to_hint
 
 
 @dataclass
@@ -104,4 +104,7 @@ def dataclass_from_dict(target_type: Type, value):
             except (NectarineMissingValueError, Exception):
                 pass
         raise NectarineInvalidValueError(target_type, value)
+    if is_literal(target_type):
+        if not is_conform_to_hint(value, target_type):
+            raise NectarineInvalidValueError(target_type, value)
     return value

@@ -101,6 +101,13 @@ def test_is_tuple_of_unknown_length():
     assert not is_tuple_of_unknown_length(List[str])
 
 
+def test_is_literal():
+    assert is_literal(Literal[1])
+    assert is_literal(Literal["some string"])
+    assert not is_literal(int)
+    assert not is_literal(List[str])
+
+
 def test_is_parsable():
     class Parsable:
         @staticmethod

@@ -53,14 +53,23 @@ def test_nested_dataclass():
 @dataclass
 class DataclassWithList:
     values: List[int]
+    opt: int
 
 
 def test_dataclass_with_list():
-    with push_env(VALUES="1,2,3"):
+    with push_env(VALUES="1,2,3", OPT="1"):
         provider = env(allow_lists=True)
         config = provider.load_configuration(DataclassWithList)
 
         assert config["values"][0] == 1
         assert config["values"][1] == 2
         assert config["values"][2] == 3
-        assert len(config) == 1 and len(config["values"]) == 3, "Ensuring no extra field is present"
+        assert len(config) == 2 and len(config["values"]) == 3, "Ensuring no extra field is present"
+
+
+def test_dataclass_with_list_without_allowing():
+    with push_env(VALUES="1,2,3", OPT="1"):
+        provider = env(allow_lists=False)
+        config = provider.load_configuration(DataclassWithList)
+        assert len(config) == 1  # lists are ignored
+        assert config["opt"] == 1

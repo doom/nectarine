@@ -2,6 +2,7 @@
 Module providing typing utilities on top of those from the typing module
 """
 
+from dataclasses import InitVar
 from inspect import getattr_static
 from typing import Any, Collection, Dict, FrozenSet, List, Literal, Mapping, Set, Tuple, Type, Union
 
@@ -169,6 +170,8 @@ def is_conform_to_hint(value, hint: Type) -> bool:
     :param value:                       the value
     :param hint:                        the type hint
     """
+    if isinstance(hint, InitVar):
+        hint = hint.type
     if hint is Any:
         return True
     if is_optional(hint):

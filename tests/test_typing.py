@@ -128,9 +128,16 @@ def test_is_conform_to_hint():
     assert is_conform_to_hint("abc", str)
     assert is_conform_to_hint(None, Optional[str])
     assert is_conform_to_hint("abc", Union[str, int])
+    assert is_conform_to_hint((1,2,3), Tuple[int, int, int])
+    assert is_conform_to_hint((1,2,3), Tuple[int, ...])
+    assert is_conform_to_hint([1,2,3], List[int])
+    
 
     assert not is_conform_to_hint(1, str)
     assert not is_conform_to_hint(1., int)
     assert not is_conform_to_hint(1, str)
     assert not is_conform_to_hint(None, str)
     assert not is_conform_to_hint("abc", Union[float, int])
+    assert not is_conform_to_hint((1,2,3), Tuple[int, int])
+    assert not is_conform_to_hint(tuple('abc'), Tuple[int, ...])
+    assert not is_conform_to_hint([1.2,3.2], List[int])

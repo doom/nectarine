@@ -183,17 +183,16 @@ def is_conform_to_hint(value, hint: Type) -> bool:
             return False
         args = get_generic_args(hint)
         if issubclass(origin, Mapping):
-            key_type = args[0]
-            value_type = args[1]
+            assert len(args) >= 2
+            key_type, value_type = args[0], args[1]
             return all(is_conform_to_hint(k, key_type) and is_conform_to_hint(v, value_type) for k, v in value.items())
+        assert len(args) >= 1
+        value_type = args[0]
         if origin is tuple:
             if is_tuple_of_unknown_length(hint):
-                value_type = args[1]
                 return all(is_conform_to_hint(v, value_type) for v in value)
             else:
                 return len(args) == len(value) and all(is_conform_to_hint(v, h) for v, h in zip(value, args))
-        assert len(args) == 1
-        value_type = args[0]
         return all(is_conform_to_hint(v, value_type) for v in value)
     if is_literal(hint):
         args = get_generic_args(hint)
